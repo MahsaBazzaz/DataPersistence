@@ -1,6 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using System;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
 
 public class GameManager : MonoBehaviour
 {
@@ -19,4 +20,49 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
         }
     }
+    public void Save()
+    {
+        // Save data into external file
+        BinaryFormatter bf = new BinaryFormatter();
+        if (File.Exists(Application.persistentDataPath + "/playerInfo.dat"))
+        {
+            FileStream file = File.Open(Application.persistentDataPath + "/playerInfo.dat", FileMode.Open);
+            // Don't save a MonoBehaviour class
+            // make a clean Serializable class instead
+            PlayerData data = new PlayerData();
+            data.health = health;
+
+            bf.Serialize(file, data);
+            file.Close();
+        }
+        else
+        {
+            FileStream file = File.Open(Application.persistentDataPath + "/playerInfo.dat", FileMode.Create);
+            PlayerData data = new PlayerData();
+            data.health = health;
+
+            bf.Serialize(file, data);
+            file.Close();
+        }
+
+    }
+    public void Load()
+    {
+        if (File.Exists(Application.persistentDataPath + "/playerInfo.dat"))
+        {
+            BinaryFormatter bf = new BinaryFormatter();
+            FileStream file = File.Open(Application.persistentDataPath + "/playerInfo.dat", FileMode.Open);
+
+            PlayerData data = (PlayerData)bf.Deserialize(file);
+            file.Close();
+
+            health = data.health;
+        }
+    }
+}
+
+[Serializable]
+class PlayerData
+{
+    public int health;
 }
